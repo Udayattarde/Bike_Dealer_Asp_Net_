@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
-using static System.Net.Mime.MediaTypeNames;
+using cloudscribe.Pagination.Models;
 
 namespace Bike_Dealer.Controllers
 {
@@ -33,10 +33,49 @@ namespace Bike_Dealer.Controllers
             };
 
         }
-        public IActionResult Index()
+        public IActionResult Index(string searchString, string priceSort,int pageNumber=1,int pageSize=2)
+          
         {
-            var bikemodel = _db.Bikes.Include(m => m.Make).Include(m=>m.Model);
-            return View(bikemodel.ToList());
+            ViewBag.Search = searchString;
+            ViewBag.currentSort = priceSort;
+            ViewBag.priceSorting=String.IsNullOrEmpty(priceSort) ? "price_Desc" : "";
+            var count = (pageSize * pageNumber) -pageSize;
+          var bikemodel = from b in _db.Bikes.Include(m => m.Make).Include(m=>m.Model) 
+                          select b;
+
+            var bikecount = bikemodel.Count();
+
+            if(!String.IsNullOrEmpty(searchString))
+            {
+                bikemodel = bikemodel.Where(b => b.Make.Name.Contains(searchString));
+                bikecount = bikemodel.Count();
+               
+
+            }
+
+            switch (priceSort)
+            {
+                case "price_Desc":
+                    bikemodel = bikemodel.OrderByDescending(b=>b.Price);
+                    break;
+                default:
+                    bikemodel = bikemodel.OrderBy(b=>b.Price);
+                    break;
+            }
+
+
+            bikemodel = bikemodel.Skip(count).Take(pageSize);
+                             
+
+            var result = new PagedResult<Bike>
+            { 
+                Data=bikemodel.AsNoTracking().ToList(),
+                TotalItems=bikecount,
+                PageNumber=pageNumber,
+                PageSize=pageSize
+            };
+
+            return View(result);
         }
 
         public IActionResult Create()
@@ -48,9 +87,10 @@ namespace Bike_Dealer.Controllers
         public IActionResult CreatePost()
         {
             if (!ModelState.IsValid)
-                BikeVM.Makes = _db.Makes.ToList();
-            BikeVM.Models = _db.Models.ToList();
+           
             {
+                BikeVM.Makes = _db.Makes.ToList();
+                BikeVM.Models = _db.Models.ToList();
                 return View(BikeVM);
             }
           
