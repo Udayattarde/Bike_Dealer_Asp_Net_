@@ -1,0 +1,36 @@
+﻿@model Bike_Dealer.Models.ViewModels.ViewModel
+@using Bike_Dealer.ExtensionMethod
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<br />
+<h2 class="text-info">Edit Model of Vehicle</h2>
+<form method="post" asp-action="Edit">
+    <input hidden asp-for="Models.id" />
+    <div class="form-group row">
+        <div class="col-2">
+            <label asp-for="Makes"></label>
+        </div>
+        <div class="col-4">
+            <select asp-for="Models.MakeID" asp-items="Model.Makes.DropdownownList()" class="form-control"></select>
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-2">
+            <label asp-for="Models.Name"></label>
+        </div>
+        <div class="col-4">
+            <input asp-for="Models.Name" class="form-control" />
+        </div>
+    </div>
+    <br />
+    <div class="form-group">
+        <input type="submit" class="btn btn-primary" value="Update" />
+        <a asp-action="Index" class="btn btn-success">Back</a>
+    </div>
+
+
+
+</form>
