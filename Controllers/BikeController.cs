@@ -96,9 +96,10 @@ namespace Bike_Dealer.Controllers
           
             
             _db.Bikes.Add(BikeVM.Bike);
-            _db.SaveChanges();
-            UploadImageIfAvailable();
            
+            UploadImageIfAvailable();
+            _db.SaveChanges();
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -144,29 +145,37 @@ namespace Bike_Dealer.Controllers
             }
         }
 
-        //[HttpGet]
-        //public IActionResult Edit(int id)
-        //{
-        //    bik.Models = _db.Models.Include(m => m.Make).SingleOrDefault(m => m.id == id);
-        //    if (viewmodel.Models == null)
-        //    {
-        //        return NotFound();
-        //    }
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            BikeVM.Bike = _db.Bikes.SingleOrDefault(m => m.Id == id);
+            BikeVM.Models = _db.Models.Where(m => m.MakeID == BikeVM.Bike.MakeID);
+            if (BikeVM.Bike == null)
+            {
+                return NotFound();
+            }
 
-        //    return View(viewmodel);
-        //}
-        //[HttpPost, ActionName("Edit")]
-        //public IActionResult EditPost()
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return View(viewmodel);
-        //    }
+            return View(BikeVM);
+        }
 
-        //    _db.Update(viewmodel.Models);
-        //    _db.SaveChanges();
-        //    return RedirectToAction(nameof(Index));
-        //}
+        [HttpPost, ActionName("Edit")]
+        public IActionResult EditPost()
+        {
+            if (!ModelState.IsValid)
+
+            {
+                BikeVM.Makes = _db.Makes.ToList();
+                BikeVM.Models = _db.Models.ToList();
+                return View(BikeVM);
+            }
+
+
+            _db.Bikes.Update(BikeVM.Bike);
+            
+            UploadImageIfAvailable();
+            _db.SaveChanges();
+            return RedirectToAction(nameof(Index));
+        }
 
         [HttpPost]
         public IActionResult Delete(int id)
